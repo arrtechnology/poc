@@ -1,4 +1,4 @@
-package com.example.pocdeeplink
+package com.vnk.pocdeeplink
 
 import android.app.Application
 import android.content.res.Configuration

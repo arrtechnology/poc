@@ -1,37 +1,64 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
-import EditScreenInfo from "@/components/EditScreenInfo";
 import { Text, View } from "@/components/Themed";
-import { router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+import {
+  PlayInstallReferrer,
+  PlayInstallReferrerInfo,
+} from "react-native-play-install-referrer";
 
 export default function TabOneScreen() {
-  useEffect(() => {
-    const checkDeferredDeepLink = async () => {
-      const deferredDeepLink = await AsyncStorage.getItem("deferredDeepLink");
-      if (deferredDeepLink) {
-        console.log("Deferred deep link found", deferredDeepLink);
-        // Handle the deep link
-        router.navigate(deferredDeepLink);
-        await AsyncStorage.removeItem("deferredDeepLink");
-      } else {
-        console.log("No deferred deep link found");
-      }
-    };
+  const [referrer, setReferrer] = useState<PlayInstallReferrerInfo | null>();
 
-    checkDeferredDeepLink();
+  const getReferrer = async () => {
+    PlayInstallReferrer.getInstallReferrerInfo((installReferrerInfo, error) => {
+      if (!error) {
+        setReferrer(installReferrerInfo);
+        console.log("Install referrer info:", installReferrerInfo);
+        console.log(
+          "Install referrer = " + installReferrerInfo?.installReferrer
+        );
+        console.log(
+          "Referrer click timestamp seconds = " +
+            installReferrerInfo?.referrerClickTimestampSeconds
+        );
+        console.log(
+          "Install begin timestamp seconds = " +
+            installReferrerInfo?.installBeginTimestampSeconds
+        );
+        console.log(
+          "Referrer click timestamp server seconds = " +
+            installReferrerInfo?.referrerClickTimestampServerSeconds
+        );
+        console.log(
+          "Install begin timestamp server seconds = " +
+            installReferrerInfo?.installBeginTimestampServerSeconds
+        );
+        console.log("Install version = " + installReferrerInfo?.installVersion);
+        console.log(
+          "Google Play instant = " + installReferrerInfo?.googlePlayInstant
+        );
+      } else {
+        console.log("Failed to get install referrer info!");
+        console.log("Response code: " + error?.responseCode);
+        console.log("Message: " + error?.message);
+      }
+    });
+  };
+
+  useEffect(() => {
+    getReferrer();
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
+      <Text style={styles.title}>Selected code is : {referrer?.installReferrer}</Text>
       <View
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
     </View>
   );
 }
